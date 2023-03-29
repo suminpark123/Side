@@ -1,0 +1,94 @@
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Test</title>
+</head>
+<body>
+    <h4>채팅테스트</h4>
+    <input type="text" id="message" placeholder="Type your message here">
+    <button id="send">메세지 보내기</button>
+
+    <script>
+        const socket = new WebSocket('ws://localhost:8081');
+
+        socket.addEventListener('open', () => {
+            console.log('웹소켓 서버열림');
+        });
+
+        socket.addEventListener('message', event => {
+            console.log('Received message:', event.data);
+            // Process the received message here
+        });
+
+        const sendMessage = () => {
+            const messageInput = document.getElementById('message');
+            const message = messageInput.value;
+            if (message) {
+                socket.send(message);
+                console.log('메세지:', message);
+                messageInput.value = '';
+            }
+        }
+
+        const sendButton = document.getElementById('send');
+        sendButton.addEventListener('click', sendMessage);
+    </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket Chat</title>
+</head>
+<body>
+  <h1>WebSocket Chat</h1>
+  <ul id="messages"></ul>
+  <form id="message-form">
+    <input type="text" id="message-input">
+    <button type="submit">Send</button>
+  </form>
+  <script>
+    const socket = new WebSocket('ws://localhost:8081');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const messagesList = document.getElementById('messages');
+
+    socket.addEventListener('open', function(event) {
+      console.log('Connected to WebSocket server');
+    });
+
+    // socket.addEventListener('message', function(event) {
+    //   console.log('Received message:', event.data);
+    //   const messageItem = document.createElement('li');
+    //   messageItem.textContent = event.data;
+    //   messagesList.appendChild(messageItem);
+        
+    // });
+
+    socket.addEventListener('message', function(event) {
+        console.log('Received message:', event.data);
+        const messageItem = document.createElement('li');
+        const reader = new FileReader();
+        reader.addEventListener('loadend', () => {
+            messageItem.textContent = reader.result;
+            messagesList.appendChild(messageItem);
+  });
+        reader.readAsText(event.data);
+});
+
+    messageForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const message = messageInput.value;
+      socket.send(message);
+      messageInput.value = '';
+    });
+  </script>
+</body>
+</html>
