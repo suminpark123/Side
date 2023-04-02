@@ -4,4 +4,4 @@
 
 ### WebSocket 채팅기능구현ing
 
-*socket.io사용
+-socket.io사용
