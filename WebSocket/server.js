@@ -1,50 +1,81 @@
 const express = require('express');
 const app = express();
+var admin = require("firebase-admin");
 
+// load firebase related information
+var serviceAccount = require("./websocketpro-fc8e3-firebase-adminsdk-c5076-b56d3a8dbf.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+// Initialize Firestore
+const db = admin.firestore();
+
+// Send the index.html file to the client
 app.use("/",function(req,res){
     res.sendFile(__dirname+'/index.html');
 });
 
-app.listen(8080);
-// //웹소켓 열기
-// const WebSocket = require('ws');
+// start server
+const server = app.listen(8080);
 
-// const socket = new WebSocket.Server({
-//     port:8081
-// });
+// Socket.IO server settings
+const io = require('socket.io')(server);
 
-// socket.on('connection',(ws,req)=>{
-//     ws.on('message',(msg)=>{
-//         console.log('유저가 보낸거 :'+msg);
-//         ws.send('서버: 응답테스트');
-//     })   
-// });
-
-const WebSocket = require('ws');
-const wss = new WebSocket.Server({ port: 8081 });
-
-// Set to store all connected clients
+// Create a Set to store connected clients
 const clients = new Set();
 
-wss.on('connection', function connection(ws) {
-  // Add new client to the set
-  clients.add(ws);
+// when a client connects
+io.on('connection', function(socket) {
+  let username = null; // keep track of the user's username
+  
+  // Add the connected clients to the Set
+  clients.add(socket);
 
-  // Send a welcome message to the new client
-  ws.send('Welcome to the chat room!');
+  // send welcome message to new client
+  socket.emit('message', 'start websocket chat');
 
-  ws.on('message', function incoming(message) {
-    console.log('Received message:', message);
-    // Broadcast message to all clients
-    clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(message);
-      }
+  socket.on('register', async function(data) {
+    // get the user's desired username from the registration request
+    const { username: desiredUsername } = data;
+    
+    // check if the desired username is already taken
+    const querySnapshot = await db.collection('users').where('username', '==', desiredUsername).get();
+    if (!querySnapshot.empty) {
+      // the username is taken, send an error message to the client
+      socket.emit('registration-error', 'Username already taken');
+      return;
+    }
+    
+    // create a new user document in Firestore with the desired username
+    const newUserRef = db.collection('users').doc();
+    await newUserRef.set({
+      id: newUserRef.id,
+      username: desiredUsername
     });
+    
+    // set the username for the current socket and send a success message to the client
+    username = desiredUsername;
+    socket.emit('registration-success', { username });
+  });
+  
+  // when receiving chat message from client
+  socket.on('chat-message', function(data) {
+    if (username) {
+      // if the user has registered, broadcast the chat message with their username
+      const message = { username, text: data.text };
+      clients.forEach(function each(client) {
+        client.emit('chat-message', message);
+      });
+    } else {
+      // if the user has not registered, send an error message to the client
+      socket.emit('registration-error', 'You must register before sending messages');
+    }
   });
 
-  ws.on('close', function() {
-    // Remove client from the set when the connection is closed
-    clients.delete(ws);
+  // when the client closes the connection
+  socket.on('disconnect', function() {
+    // Remove the client that has closed the connection from the Set
+    clients.delete(socket);
   });
 });
