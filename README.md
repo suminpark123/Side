@@ -5,3 +5,5 @@
 ### WebSocket 채팅기능구현ing
 
 -socket.io사용
+
+-firebase 사용
