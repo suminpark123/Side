@@ -6,9 +6,5 @@
 
 -채팅기능구현중
 
-*socket.io사용
-
-*firebase 사용
-
-* Jetpack Compose (UI/UX)
-* Room Database (메모장)
+* socket.io사용
+* firebase 사용
