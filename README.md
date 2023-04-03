@@ -9,3 +9,6 @@
 *socket.io사용
 
 *firebase 사용
+
+* Jetpack Compose (UI/UX)
+* Room Database (메모장)
