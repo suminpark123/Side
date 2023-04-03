@@ -6,6 +6,6 @@
 
 -채팅기능구현중
 
-socket.io사용
+*socket.io사용
 
-firebase 사용
+*firebase 사용
