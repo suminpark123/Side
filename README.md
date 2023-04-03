@@ -6,5 +6,6 @@
 
 -채팅기능구현중
 
-* socket.io사용
-* firebase 사용
+* Node.js서버구축
+* Socket.io사용
+* Firebase 사용
