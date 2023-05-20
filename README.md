@@ -4,7 +4,7 @@
 
 ## WebSocket 
 
--채팅기능구현중
+-채팅기능 구현중
 
 * Linux OS환경
 * Node.js서버구축
